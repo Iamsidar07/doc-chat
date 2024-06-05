@@ -8,8 +8,14 @@ const genAi = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
 
 export const POST = async (req: NextRequest) => {
   try {
+    const { namespace } = await req.json();
+    if (!namespace) {
+      return NextResponse.json(
+        { error: "No namespace provided" },
+        { status: 400 },
+      );
+    }
     let docContext = "";
-    const namespace = "somekindofnamespace";
 
     try {
       const embeddings = new CohereEmbeddings({
@@ -39,14 +45,12 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
-    const prompt = `You are an assistant who creates sample questions to ask a chatbot.
-          Given the context below of the pdf content come up with 4 suggested questions.
-          keep them to less than 12 words each.
-          Do not label which page the question is for/from
-
-          START CONTEXT
+    const prompt = `As an assistant creating sample questions for a chatbot, provide 4 concise questions, less than 12 words each, based on the given document context.
+          Avoid specifying the page. Format the questions in array of questions.
+          CONTEXT:
           ${docContext}
-          END CONTEXT`;
+          END OF CONTEXT`;
+
     const response = await chat.sendMessage(prompt);
     return NextResponse.json(response.response.text());
   } catch (error) {

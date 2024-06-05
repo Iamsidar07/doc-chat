@@ -15,6 +15,7 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Index } from "@upstash/vector";
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
+import { createClient } from "@/utils/supabase/server";
 // astraDB
 const astraConfig: AstraLibArgs = {
   token: process.env.ASTRA_DB_APPLICATION_TOKEN as string,
@@ -108,13 +109,16 @@ async function ingest(file: File, fileLink?: string) {
   // ----------------------- Indexing -----------------------
 }
 
-export const POST = async (req: NextRequest) => {
-  const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  if (!file) return NextResponse.json({ error: "No file provided" });
+export const GET = async (req: NextRequest) => {
+  // const formData = await req.formData();
+  // const file = formData.get("file") as File | null;
+  // if (!file) return NextResponse.json({ error: "No file provided" });
   try {
-    await ingest(file);
+    // await ingest(file);
     // const result = await retrieve("What are Supernova simulations?");
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.getSession();
+    console.log(data.session?.user.id, error);
     return NextResponse.json({ message: "Hello World" });
   } catch (error) {
     console.log(error);

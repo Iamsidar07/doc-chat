@@ -5,13 +5,18 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Index } from "@upstash/vector";
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
+import { v4 as uuidv4 } from "uuid";
+import { createClient } from "@/utils/supabase/server";
 
 export const POST = async (req: NextRequest) => {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.getUser();
+  const userId = data.user?.id;
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
   const fileLink = formData.get("fileLink") as string | null;
   if (!file && !fileLink) return;
-  const namespace = "somekindofnamespace";
+  const namespace = uuidv4();
   try {
     let loader: CheerioWebBaseLoader | PDFLoader;
 
@@ -44,8 +49,7 @@ export const POST = async (req: NextRequest) => {
     const docMap = docs.map((doc) => ({
       pageContent: doc.pageContent,
       metadata: {
-        userId: "somekindofid",
-        someMoreInfo: "someMoreInfo",
+        userId,
       },
     }));
 
@@ -63,7 +67,7 @@ export const POST = async (req: NextRequest) => {
 
     await vectoreStore.addDocuments(splitDocs);
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ namespace, success: true }, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ error: error, success: false });

@@ -3,12 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import {
-  LangChainAdapter,
-  Message,
-  StreamingTextResponse,
-  createStreamDataTransformer,
-} from "ai";
+import { Message, StreamingTextResponse } from "ai";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { Index } from "@upstash/vector";
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
@@ -39,7 +34,6 @@ QUESTION: {question}
 const prompt = PromptTemplate.fromTemplate(questionTemplate);
 
 const formatVercelMessages = (messages: Message[]) => {
-  console.log({ messages });
   const formattedDialogueTurns = messages.map((message) => {
     if (message.role === "user") {
       return `Human: ${message.content}`;
@@ -49,18 +43,14 @@ const formatVercelMessages = (messages: Message[]) => {
       return `${message.role}: ${message.content}`;
     }
   });
-  console.log({ formattedDialogueTurns });
   return formattedDialogueTurns.join("\n\n");
 };
 
 export const POST = async (req: NextRequest) => {
-  const namespace = "somekindofnamespace";
   try {
-    const { messages } = await req.json();
-    console.log(messages);
+    const { messages, namespace = "default" } = await req.json();
 
     const previousMessages = messages.slice(0, -1);
-    console.log({ previousMessages });
     const latestMessage = messages[messages?.length - 1]?.content;
 
     // google embeddings
@@ -96,9 +86,9 @@ export const POST = async (req: NextRequest) => {
     });
 
     const retrievedDocs = await astraRetriever.invoke(latestMessage);
+    console.log("retrievedDocs", retrievedDocs);
     const stream = await chain.stream({
       question: latestMessage,
-      chat_history: formatVercelMessages(previousMessages),
       context: retrievedDocs,
     });
 
