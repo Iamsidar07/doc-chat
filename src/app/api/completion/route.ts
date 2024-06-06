@@ -46,12 +46,14 @@ export const POST = async (req: NextRequest) => {
     });
 
     const prompt = `As an assistant creating sample questions for a chatbot, provide 4 concise questions, less than 12 words each, based on the given document context.
-          Avoid specifying the page. Format the questions in array of questions.
+          Avoid specifying the page. Format your response in json. json format: {"questions": ["question1", "question2", "question3", "question4"]}
+
           CONTEXT:
           ${docContext}
           END OF CONTEXT`;
 
     const response = await chat.sendMessage(prompt);
+    console.log(JSON.parse(response.response.text()).questions);
     return NextResponse.json(response.response.text());
   } catch (error) {
     console.log(error);

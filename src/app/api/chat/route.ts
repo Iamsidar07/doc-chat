@@ -21,8 +21,8 @@ const condenseQuestionPrompt = PromptTemplate.fromTemplate(
   condenseQuestionTemplate,
 );
 
-const questionTemplate = `You are an AI assistant answering questions about anything from pdf file the context will provide you with the most relevant data from pdf page content. 
-if the context is empty, answer it to the best of your ability. If you cannot find the answer user's question in the context, reply with "I'm sorry, I'm only allowed to answer questions related to your pdf file.".
+const questionTemplate = `You are an AI assistant answering questions about anything from document the context will provide you with the most relevant data from pdf page content. 
+if the context is empty, answer it to the best of your ability. If you cannot find the answer user's question in the context, reply with "I'm sorry, I'm only allowed to answer questions related to your document.".
 
 <context>
   {context}
@@ -61,7 +61,7 @@ export const POST = async (req: NextRequest) => {
 
     const chatModel = new ChatGoogleGenerativeAI({
       apiKey: process.env.GOOGLE_API_KEY as string,
-      model: "gemini-pro",
+      model: "gemini-1.5-pro",
       temperature: 0,
     });
 
@@ -86,10 +86,10 @@ export const POST = async (req: NextRequest) => {
     });
 
     const retrievedDocs = await astraRetriever.invoke(latestMessage);
-    console.log("retrievedDocs", retrievedDocs);
     const stream = await chain.stream({
       question: latestMessage,
       context: retrievedDocs,
+      chat_history: previousMessages,
     });
 
     return new StreamingTextResponse(stream);
