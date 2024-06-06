@@ -17,7 +17,6 @@ import { Index } from "@upstash/vector";
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
 import { createClient } from "@/utils/supabase/server";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
-import client from "@/config/s3";
 // astraDB
 const astraConfig: AstraLibArgs = {
   token: process.env.ASTRA_DB_APPLICATION_TOKEN as string,
@@ -105,7 +104,7 @@ async function ingest(file: File, fileLink?: string) {
   const vectorStore = await UpstashVectorStore.fromDocuments(
     splitDocs,
     embeddings,
-    { index },
+    { index }
   );
 
   // ----------------------- Indexing -----------------------
@@ -123,7 +122,6 @@ export const GET = async (req: NextRequest) => {
       Key: "ffe9d4c1-9772-4d73-9113-96ef484114f2",
       Bucket: "pdf",
     });
-    const res = await client.send(command);
     const { data, error } = await supabase.auth.getSession();
     console.log(data.session?.user.id, error);
     return NextResponse.json({
