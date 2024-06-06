@@ -1,5 +1,6 @@
 "use client";
 
+import { createClient } from "@/utils/supabase/client";
 import { Message } from "ai";
 import { useChat, useCompletion } from "ai/react";
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ interface DashboardPageParams {
 
 export default function DashboardPage({ params }: DashboardPageParams) {
   const [suggestionQuestions, setSuggestionQuestions] = useState<string[]>([]);
+
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
       streamMode: "text",
