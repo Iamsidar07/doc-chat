@@ -14,6 +14,9 @@ interface DashboardPageParams {
 }
 
 export default function DashboardPage({ params }: DashboardPageParams) {
+  const supabase = createClient();
+  const { data } = supabase.storage.from("pdf").getPublicUrl(params.id);
+  console.log({ data });
   const [suggestionQuestions, setSuggestionQuestions] = useState<string[]>([]);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
