@@ -7,8 +7,6 @@ import { Index } from "@upstash/vector";
 import { UpstashVectorStore } from "@langchain/community/vectorstores/upstash";
 import { v4 as uuidv4 } from "uuid";
 import { createClient } from "@/utils/supabase/server";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import client from "@/config/s3";
 
 export const POST = async (req: NextRequest) => {
   const supabase = createClient();
@@ -33,24 +31,12 @@ export const POST = async (req: NextRequest) => {
       loader = new PDFLoader(blob, {
         splitPages: true,
       });
-      try {
-        console.log("Uploading to S3");
-        // @ts-ignore
-        const command = new PutObjectCommand({
-          Key: namespace,
-          Body: file.stream(),
-          Bucket: "pdf",
-          ContentType: "application/pdf",
-          Metadata: {
-            userId: userId ?? "",
-          },
-        });
-        const res = await client.send(command);
-        console.log("Upload response", res);
-      } catch (error) {
-        console.log("Failed to upload to S3", error);
-        throw new Error("Failed to upload to S3");
-      }
+      console.log("Uploading to S3");
+      const { data, error } = await supabase.storage
+        .from("pdf")
+        .upload(namespace, file);
+      if (error) throw error;
+      console.log("Upload response", data.path);
     } else {
       throw new Error("No file or fileLink provided");
     }
