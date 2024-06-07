@@ -11,14 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url,
-).toString();
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 interface DisplayPdfProps {
   namespace: string;
 }
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const DisplayPdf = ({ namespace }: DisplayPdfProps) => {
   const [currentPageNumber, setCurrentPageNumber] = useState(1);

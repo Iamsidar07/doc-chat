@@ -1,5 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
@@ -48,7 +48,10 @@ const formatVercelMessages = (messages: Message[]) => {
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { messages, namespace = "default" } = await req.json();
+    const {
+      messages,
+      namespace = "default",
+    }: { messages: Message[]; namespace?: string } = await req.json();
 
     const previousMessages = messages.slice(0, -1);
     const latestMessage = messages[messages?.length - 1]?.content;
@@ -89,7 +92,7 @@ export const POST = async (req: NextRequest) => {
     const stream = await chain.stream({
       question: latestMessage,
       context: retrievedDocs,
-      chat_history: previousMessages,
+      chat_history: formatVercelMessages(previousMessages),
     });
 
     return new StreamingTextResponse(stream);
