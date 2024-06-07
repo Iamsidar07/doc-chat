@@ -1,9 +1,11 @@
 "use client";
 
-import { createClient } from "@/utils/supabase/client";
+import DisplayPdf from "@/components/DisplayPdf";
 import { Message } from "ai";
 import { useChat, useCompletion } from "ai/react";
 import { useEffect, useState } from "react";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,9 +16,6 @@ interface DashboardPageParams {
 }
 
 export default function DashboardPage({ params }: DashboardPageParams) {
-  const supabase = createClient();
-  const { data } = supabase.storage.from("pdf").getPublicUrl(params.id);
-  console.log({ data });
   const [suggestionQuestions, setSuggestionQuestions] = useState<string[]>([]);
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
@@ -43,7 +42,6 @@ export default function DashboardPage({ params }: DashboardPageParams) {
     onFinish(prompt, completion) {
       const parsed = JSON.parse(completion);
       const questions = JSON.parse(parsed).questions;
-      console.log({ completion, parsed, questions });
       setSuggestionQuestions(questions);
     },
   });
@@ -51,7 +49,6 @@ export default function DashboardPage({ params }: DashboardPageParams) {
   useEffect(() => {
     complete("", { body: { namespace: params.id } });
   }, [params.id]);
-  console.log(suggestionQuestions);
 
   const Message = ({ message }: { message: Message }) => {
     return (
@@ -71,6 +68,7 @@ export default function DashboardPage({ params }: DashboardPageParams) {
 
   return (
     <>
+      <DisplayPdf namespace={params.id} />
       <h1>Dashboard: {params.id}</h1>
       {messages.map((message) => (
         <Message key={message.id} message={message} />
